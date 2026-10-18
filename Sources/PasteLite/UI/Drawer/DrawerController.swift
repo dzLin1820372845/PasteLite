@@ -3,13 +3,20 @@ import SwiftUI
 
 /// 底部抽屉面板：无边框 + 非激活样式。弹出全程不激活本应用（焦点红线：不调用 NSApp.activate），目标应用保持前台
 private final class DrawerPanel: NSPanel {
+    var onKeyDown: ((NSEvent) -> Bool)?
+
     // 无边框窗口默认不可成为 key；覆写让搜索框能接收键盘输入。
     // 配合 .nonactivatingPanel，收键不伴随应用激活
     override var canBecomeKey: Bool { true }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, onKeyDown?(event) == true { return }
+        super.sendEvent(event)
+    }
 }
 
 /// 抽屉内数字选卡快捷键的键码、修饰键和展示文案。
-/// 修饰键只在抽屉已经打开时由本地事件监听处理，不注册为系统级热键。
+/// 修饰键只在抽屉已经打开时由事件 tap 处理，抽屉关闭后立即移除。
 enum NumberSelectionShortcut {
     static let command: UInt32 = 0x0100
     static let shift: UInt32 = 0x0200
@@ -76,6 +83,9 @@ final class DrawerController: ObservableObject {
                 numberSelectionModifiers = oldValue
                 return
             }
+            if panel.isVisible {
+                numberSelectionHotKeyManager.register(modifiers: numberSelectionModifiers)
+            }
             hostingView.rootView = makeDrawerView(generation: showGeneration)
         }
     }
@@ -84,9 +94,9 @@ final class DrawerController: ObservableObject {
     private let onPaste: (ClipboardItem, Bool) -> PasteOutcome
     private let panel: DrawerPanel
     private let hostingView: NSHostingView<DrawerView>
+    private let numberSelectionHotKeyManager: NumberSelectionHotKeyManager
     private var displayedItems: [ClipboardItem] = []
     private var showGeneration = 0
-    private var keyMonitor: Any?
     private var outsideClickMonitor: Any?
 
     init(store: ClipboardStore,
@@ -94,6 +104,7 @@ final class DrawerController: ObservableObject {
         self.store = store
         self.onPaste = onPaste
         self.numberSelectionModifiers = NumberSelectionShortcut.defaultModifiers
+        self.numberSelectionHotKeyManager = NumberSelectionHotKeyManager()
 
         let panel = DrawerPanel(contentRect: .zero,
                                 styleMask: [.borderless, .nonactivatingPanel],
@@ -118,6 +129,14 @@ final class DrawerController: ObservableObject {
                                                               onSelect: { _ in },
                                                               onItemsChanged: { _ in }))
         panel.contentView = hostingView
+        panel.onKeyDown = { [weak self] event in
+            self?.handleKeyDown(event) ?? false
+        }
+        numberSelectionHotKeyManager.onHotKey = { [weak self] index in
+            MainActor.assumeIsolated {
+                self?.selectNumber(at: index)
+            }
+        }
         hostingView.rootView = makeDrawerView(generation: 0)
     }
 
@@ -161,8 +180,11 @@ final class DrawerController: ObservableObject {
 
         // 每次唤出以递增 generation 重建内容：清空上次搜索词，并让搜索框重新聚焦
         showGeneration += 1
-        displayedItems = []
+        // 先同步未过滤的历史，避免 SwiftUI 视图异步挂载前数字热键看到空列表。
+        // 搜索框有输入后，DrawerView 再通过 onItemsChanged 更新为过滤结果。
+        displayedItems = store.items
         hostingView.rootView = makeDrawerView(generation: showGeneration)
+        numberSelectionHotKeyManager.register(modifiers: numberSelectionModifiers)
 
         panel.setFrame(initialFrame, display: false)
         panel.orderFrontRegardless()   // 显示但不激活应用
@@ -189,20 +211,6 @@ final class DrawerController: ObservableObject {
     }
 
     private func installMonitors() {
-        guard keyMonitor == nil else { return }
-        // Esc 关闭、数字快捷键选卡：只拦截发往本面板的按键，其他窗口不受影响。
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, event.window === self.panel else { return event }
-            if event.keyCode == 53 /* kVK_Escape */ {
-                self.hide()
-                return nil
-            }
-            guard let index = NumberSelectionShortcut.index(for: event,
-                                                            modifiers: self.numberSelectionModifiers),
-                  index < self.displayedItems.count else { return event }
-            self.select(self.displayedItems[index], asPlainText: false)
-            return nil
-        }
         // 点击面板外关闭：应用未激活时点击其他应用窗口只有全局 monitor 能看到；
         // 命中点在面板 frame 外才收起，面板内点击交给 SwiftUI
         outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
@@ -212,14 +220,32 @@ final class DrawerController: ObservableObject {
     }
 
     private func removeMonitors() {
-        if let keyMonitor {
-            NSEvent.removeMonitor(keyMonitor)
-            self.keyMonitor = nil
-        }
+        numberSelectionHotKeyManager.unregister()
         if let outsideClickMonitor {
             NSEvent.removeMonitor(outsideClickMonitor)
             self.outsideClickMonitor = nil
         }
+    }
+
+    /// 面板自身接收按键，避免非激活面板的本地事件 monitor 收不到键盘事件。
+    /// 返回 true 表示消费事件，防止数字键继续进入搜索框或触发系统快捷键。
+    private func handleKeyDown(_ event: NSEvent) -> Bool {
+        if event.keyCode == 53 /* kVK_Escape */ {
+            hide()
+            return true
+        }
+        guard let index = NumberSelectionShortcut.index(for: event,
+                                                        modifiers: numberSelectionModifiers),
+              index < displayedItems.count else {
+            return false
+        }
+        select(displayedItems[index], asPlainText: false)
+        return true
+    }
+
+    private func selectNumber(at index: Int) {
+        guard panel.isVisible, index < displayedItems.count else { return }
+        select(displayedItems[index], asPlainText: false)
     }
 
     private func makeDrawerView(generation: Int) -> DrawerView {
