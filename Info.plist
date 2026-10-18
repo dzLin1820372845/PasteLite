@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>CFBundleExecutable</key>
+	<string>PasteLite</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.tclx.pastelite</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>PasteLite</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<!-- 菜单栏常驻应用：无 Dock 图标、无主窗口 -->
+	<key>LSUIElement</key>
+	<true/>
+	<!-- 合成 Cmd+V 实现点击即粘贴 -->
+	<key>NSAccessibilityUsageDescription</key>
+	<string>PasteLite 需要辅助功能权限，才能把选中的剪贴板历史直接粘贴到当前应用。</string>
+	<!-- 读取其他应用写入的剪贴板内容（macOS 15+ 触发系统授权弹窗） -->
+	<key>NSPasteboardFullAccessUsageDescription</key>
+	<string>PasteLite 需要读取系统剪贴板内容以保存复制历史。</string>
+</dict>
+</plist>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <title>PasteLite</title>
+  <desc>A warm-white P card over mint clipboard-history cards, on a deep teal macOS icon.</desc>
+  <defs>
+    <linearGradient id="tile" x1="192" y1="104" x2="840" y2="948" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#20575A"/>
+      <stop offset="0.5" stop-color="#103C40"/>
+      <stop offset="1" stop-color="#08282E"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="translate(276 176) rotate(52) scale(838 764)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70D8BC" stop-opacity="0.19"/>
+      <stop offset="1" stop-color="#70D8BC" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rear" x1="392" y1="232" x2="728" y2="690" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ED8B6"/>
+      <stop offset="1" stop-color="#39A88E"/>
+    </linearGradient>
+    <linearGradient id="middle" x1="330" y1="276" x2="664" y2="738" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B9F1D7"/>
+      <stop offset="1" stop-color="#85DABB"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="278" y1="322" x2="652" y2="770" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFEF9"/>
+      <stop offset="1" stop-color="#EAEFE5"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="370" y1="414" x2="540" y2="676" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#225B58"/>
+      <stop offset="1" stop-color="#0E3C40"/>
+    </linearGradient>
+    <filter id="tileShadow" x="0" y="0" width="1024" height="1024" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#08282E" flood-opacity="0.18"/>
+    </filter>
+    <filter id="cardShadow" x="160" y="152" width="728" height="746" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#031F24" flood-opacity="0.24"/>
+    </filter>
+    <filter id="frontShadow" x="160" y="224" width="650" height="678" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#031F24" flood-opacity="0.27"/>
+    </filter>
+  </defs>
+  <g filter="url(#tileShadow)">
+    <rect x="80" y="80" width="864" height="864" rx="194" fill="url(#tile)"/>
+    <rect x="80" y="80" width="864" height="864" rx="194" fill="url(#light)"/>
+    <rect x="81" y="81" width="862" height="862" rx="193" stroke="#D9FFEF" stroke-opacity="0.14" stroke-width="2"/>
+  </g>
+  <g filter="url(#cardShadow)">
+    <g transform="rotate(13 558 467)">
+      <rect x="390" y="238" width="336" height="458" rx="49" fill="url(#rear)"/>
+      <rect x="391" y="239" width="334" height="456" rx="48" stroke="#DCFFF0" stroke-opacity="0.3" stroke-width="2"/>
+    </g>
+  </g>
+  <g filter="url(#cardShadow)">
+    <g transform="rotate(3 509 511)">
+      <rect x="334" y="282" width="350" height="458" rx="49" fill="url(#middle)"/>
+      <rect x="335" y="283" width="348" height="456" rx="48" stroke="#F0FFF5" stroke-opacity="0.5" stroke-width="2"/>
+    </g>
+  </g>
+  <g filter="url(#frontShadow)">
+    <g transform="rotate(-9 461 548)">
+      <rect x="276" y="320" width="370" height="456" rx="49" fill="url(#paper)"/>
+      <rect x="277" y="321" width="368" height="454" rx="48" stroke="white" stroke-opacity="0.85" stroke-width="2"/>
+      <path fill-rule="evenodd" d="M366 676V420H473C541 420 580 455 580 514C580 574 540 610 473 610H425V676H366ZM425 472V558H469C503 558 521 543 521 514C521 486 503 472 469 472H425Z" fill="url(#ink)"/>
+    </g>
+  </g>
+</svg>
