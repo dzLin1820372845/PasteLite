@@ -35,7 +35,8 @@ final class MenuBarController: NSObject {
 
     private func configureButton() {
         guard let button = statusItem.button else { return }
-        let icon = NSImage(systemSymbolName: "clipboard", accessibilityDescription: "PasteLite")
+        let icon = PasteLiteBranding.templateImage(size: 20)
+            ?? NSImage(systemSymbolName: "clipboard", accessibilityDescription: "PasteLite")
         icon?.isTemplate = true   // 模板图：菜单栏明暗模式自动反色
         button.image = icon
     }
@@ -87,12 +88,13 @@ final class MenuBarController: NSObject {
 
     private func makeSettingsWindowIfNeeded() {
         guard settingsWindow == nil else { return }
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 560),
-                              styleMask: [.titled, .closable],
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 520),
+                              styleMask: [.titled, .closable, .resizable],
                               backing: .buffered,
                               defer: false)
         window.title = "PasteLite 设置"
         window.isReleasedWhenClosed = false
+        window.minSize = NSSize(width: 700, height: 480)
         window.contentView = NSHostingView(rootView: SettingsView(settings: settings, store: store))
         window.center()
         settingsWindow = window

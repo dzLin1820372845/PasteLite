@@ -41,6 +41,8 @@ PasteLite 是一个原生 macOS 菜单栏剪贴板历史管理器，记录你复
 > 2. 右键 `PasteLite.app`，选择“打开”。
 > 3. 如果仍被阻止，进入“系统设置 → 隐私与安全性”，点击“仍要打开”。
 
+请只保留一个 PasteLite 副本并从“应用程序”启动。由于当前版本使用 ad-hoc 签名，更新二进制后 macOS 可能会把它视为新的授权对象，需要重新授予“辅助功能”权限。
+
 3. 根据提示在“系统设置 → 隐私与安全性”中授予：
    - **辅助功能**：用于把选中的历史内容发送到当前前台应用。
    - **剪贴板访问**（macOS 15 及以上可能显示）：用于读取复制内容并保存历史。
@@ -71,7 +73,7 @@ cd PasteLite
 构建完成后：
 
 - 应用：`build/PasteLite.app`
-- Universal DMG：`dist/PasteLite-0.1.1-macOS-universal.dmg`
+- Universal DMG：`dist/PasteLite-0.1.2-macOS-universal.dmg`
 
 脚本会分别构建 `arm64` 和 `x86_64`，用 `lipo` 合并为 Universal 二进制，再组装并 ad-hoc 签名应用，最后生成可拖拽安装的 DMG。
 
@@ -82,7 +84,7 @@ cd PasteLite
 
 ## 版本
 
-当前 Release 为 **0.1.1**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
+当前 Release 为 **0.1.2**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
 
 ## 许可证
 
