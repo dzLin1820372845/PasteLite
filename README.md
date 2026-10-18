@@ -8,9 +8,23 @@ PasteLite 是一个原生 macOS 菜单栏剪贴板历史管理器，记录你复
 
 ## 界面预览
 
-剪贴板抽屉支持文本、富文本、来源应用图标、置顶和删除操作：
+剪贴板抽屉支持文本、富文本、来源应用图标、置顶、删除和 `⌘1–⌘9` 数字选卡：
 
 ![PasteLite 剪贴板抽屉](docs/screenshots/drawer.png)
+
+### 设置界面
+
+常规页集中管理辅助功能授权、登录时启动和剪贴板访问：
+
+![PasteLite 常规设置](docs/screenshots/settings-general.png)
+
+快捷键页可以修改抽屉唤起键，并选择数字选卡使用的修饰键：
+
+![PasteLite 快捷键设置](docs/screenshots/settings-hotkey.png)
+
+关于页显示当前版本、应用图标、开源许可，并提供手动检查更新入口：
+
+![PasteLite 关于与更新](docs/screenshots/settings-about.png)
 
 ## 功能
 
