@@ -41,6 +41,7 @@ fi
 lipo "$ARM64_BINARY" "$X86_64_BINARY" -create -output "$APP/Contents/MacOS/PasteLite"
 cp Info.plist "$APP/Contents/Info.plist"
 cp Resources/Branding/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+cp Resources/Branding/PasteLiteTemplate.png "$APP/Contents/Resources/PasteLiteTemplate.png"
 codesign --force --sign - "$APP"
 
 DMG_STAGING=$(mktemp -d "${TMPDIR:-/tmp}/pastelite-dmg.XXXXXX")

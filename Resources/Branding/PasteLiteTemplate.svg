@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <title>PasteLite monochrome logo</title>
+  <desc>Monochrome stacked clipboard cards with a P mark for menu bar and settings UI.</desc>
+  <g stroke="#000000" stroke-width="42" stroke-linejoin="round">
+    <rect x="392" y="212" width="328" height="470" rx="48" transform="rotate(13 556 447)"/>
+    <rect x="334" y="278" width="350" height="458" rx="48" transform="rotate(3 509 507)"/>
+    <rect x="276" y="320" width="370" height="456" rx="49" transform="rotate(-9 461 548)"/>
+  </g>
+  <path fill="#000000" d="M366 676V420H473C541 420 580 455 580 514C580 574 540 610 473 610H425V676H366ZM425 472V558H469C503 558 521 543 521 514C521 486 503 472 469 472H425Z"/>
+</svg>
