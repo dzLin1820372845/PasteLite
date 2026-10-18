@@ -46,6 +46,7 @@ codesign --force --sign - "$APP"
 DMG_STAGING=$(mktemp -d "${TMPDIR:-/tmp}/pastelite-dmg.XXXXXX")
 trap 'rm -rf "$DMG_STAGING"' EXIT
 cp -R "$APP" "$DMG_STAGING/PasteLite.app"
+cp docs/安装说明.txt "$DMG_STAGING/安装说明.txt"
 ln -s /Applications "$DMG_STAGING/Applications"
 hdiutil create \
   -volname "PasteLite ${VERSION}" \
