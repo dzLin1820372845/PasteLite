@@ -60,6 +60,7 @@ final class PasteLiteApp: NSObject, NSApplicationDelegate {
         let engine = PasteEngine()
         // 抽屉点击后 D 已同步离屏面板再回调，这里直接交给引擎回填+合成按键
         let drawer = DrawerController(store: store, onPaste: engine.paste)
+        drawer.numberSelectionModifiers = settings.numberSelectionModifiers
 
         let monitor = ClipboardMonitor()
         monitor.onNewContent = { item in store.record(item) }
@@ -87,6 +88,13 @@ final class PasteLiteApp: NSObject, NSApplicationDelegate {
             .dropFirst()
             .sink { [weak hotKeyManager] keyCode, modifiers in
                 hotKeyManager?.register(keyCode: keyCode, modifiers: modifiers)
+            }
+            .store(in: &cancellables)
+
+        settings.$numberSelectionModifiers
+            .dropFirst()
+            .sink { [weak drawer] modifiers in
+                drawer?.numberSelectionModifiers = modifiers
             }
             .store(in: &cancellables)
 

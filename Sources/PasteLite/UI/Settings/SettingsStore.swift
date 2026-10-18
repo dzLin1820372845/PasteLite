@@ -12,6 +12,9 @@ import ServiceManagement
     @Published var hotKeyModifiers: UInt32 {
         didSet { UserDefaults.standard.set(Int(hotKeyModifiers), forKey: Self.hotKeyModifiersKey) }
     }
+    @Published var numberSelectionModifiers: UInt32 {
+        didSet { UserDefaults.standard.set(Int(numberSelectionModifiers), forKey: Self.numberSelectionModifiersKey) }
+    }
     /// 历史上限；didSet 同步进 store.capacity 使淘汰立即生效（落盘持久化由 store 侧负责）
     @Published var capacity: Int {
         didSet {
@@ -44,6 +47,7 @@ import ServiceManagement
 
     private static let hotKeyCodeKey = "hotKeyCode"
     private static let hotKeyModifiersKey = "hotKeyModifiers"
+    private static let numberSelectionModifiersKey = "numberSelectionModifiers"
     private static let capacityKey = "capacity"
     private static let excludedKey = "excludedBundleIDs"
     private static let launchAtLoginKey = "launchAtLogin"
@@ -64,6 +68,12 @@ import ServiceManagement
 
         let storedModifiers = defaults.object(forKey: Self.hotKeyModifiersKey) as? Int
         self.hotKeyModifiers = UInt32(storedModifiers ?? 0x0300) // cmdKey|shiftKey
+
+        let storedNumberModifiers = defaults.object(forKey: Self.numberSelectionModifiersKey) as? Int
+        let numberModifiers = UInt32(storedNumberModifiers ?? Int(NumberSelectionShortcut.defaultModifiers))
+        self.numberSelectionModifiers = NumberSelectionShortcut.modifierOptions.contains(numberModifiers)
+            ? numberModifiers
+            : NumberSelectionShortcut.defaultModifiers
 
         let storedCapacity = defaults.object(forKey: Self.capacityKey) as? Int ?? Self.defaultCapacity
         self.capacity = min(max(storedCapacity, 50), 1000)

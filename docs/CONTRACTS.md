@@ -90,6 +90,7 @@ final class HotKeyManager {
 // UI/Drawer/DrawerController.swift —— D 拥有
 @MainActor final class DrawerController: ObservableObject {
     var isVisible: Bool { get }
+    var numberSelectionModifiers: UInt32 { get set } // 默认 cmdKey；抽屉内数字选卡修饰键
     init(store: ClipboardStore,
          onPaste: @escaping (ClipboardItem, Bool) -> PasteOutcome)   // (条目, 是否纯文本)
     func toggle()   // 隐藏→定位鼠标所在屏底部滑出；可见→收起
@@ -100,6 +101,7 @@ final class HotKeyManager {
 @MainActor final class SettingsStore: ObservableObject {
     @Published var hotKeyCode: UInt32           // 默认 9（kVK_ANSI_V）
     @Published var hotKeyModifiers: UInt32      // 默认 cmdKey|shiftKey = 0x0300
+    @Published var numberSelectionModifiers: UInt32 // 默认 cmdKey；抽屉内 1–9 选卡
     @Published var capacity: Int                // 50...1000，默认 100；didSet 同步 store.capacity
     @Published var excludedBundleIDs: [String]  // 预置 1Password/KeePassXC/钥匙串访问
     @Published var launchAtLogin: Bool          // didSet 走 SMAppService.mainApp

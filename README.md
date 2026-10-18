@@ -22,6 +22,7 @@ PasteLite 是一个原生 macOS 菜单栏剪贴板历史管理器，记录你复
 - 历史保存到本地，默认保留 100 条，可在设置中调整为 50–1000 条。
 - 支持登录时启动，跟随系统浅色/深色模式。
 - 设置中提供关于页、当前版本和手动检查更新，更新包下载后可替换旧版本。
+- 抽屉打开时支持可配置修饰键 + 1–9 快速粘贴对应历史卡片。
 
 ## 系统要求
 
@@ -74,7 +75,7 @@ cd PasteLite
 构建完成后：
 
 - 应用：`build/PasteLite.app`
-- Universal DMG：`dist/PasteLite-1.0.1-macOS-universal.dmg`
+- Universal DMG：`dist/PasteLite-1.1.0-macOS-universal.dmg`
 
 脚本会分别构建 `arm64` 和 `x86_64`，用 `lipo` 合并为 Universal 二进制，再组装并 ad-hoc 签名应用，最后生成可拖拽安装的 DMG。
 
@@ -85,7 +86,7 @@ cd PasteLite
 
 ## 版本
 
-当前 Release 为 **1.0.1**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
+当前 Release 为 **1.1.0**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
 
 ## 许可证
 

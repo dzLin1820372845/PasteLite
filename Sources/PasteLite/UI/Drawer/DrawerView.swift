@@ -7,7 +7,9 @@ import SwiftUI
 struct DrawerView: View {
     @ObservedObject var store: ClipboardStore
     let generation: Int
+    let numberSelectionModifiers: UInt32
     let onSelect: (ClipboardItem) -> Void
+    let onItemsChanged: ([ClipboardItem]) -> Void
 
     @State private var query = ""
     @FocusState private var searchFocused: Bool
@@ -36,7 +38,16 @@ struct DrawerView: View {
                 .strokeBorder(.quaternary)
         )
         .id(generation)
-        .task { searchFocused = true }
+        .task {
+            searchFocused = true
+            onItemsChanged(filteredItems)
+        }
+        .onChange(of: query) { _ in
+            onItemsChanged(filteredItems)
+        }
+        .onChange(of: store.items.map(\.id)) { _ in
+            onItemsChanged(filteredItems)
+        }
     }
 
     /// 顶部工具栏（48pt）：居中半透明胶囊搜索框
@@ -84,8 +95,14 @@ struct DrawerView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 16) {
-                        ForEach(filteredItems) { item in
-                            CardView(item: item, store: store, onSelect: onSelect, height: cardHeight)
+                        ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
+                            CardView(item: item,
+                                     store: store,
+                                     onSelect: onSelect,
+                                     height: cardHeight,
+                                     shortcutLabel: index < 9
+                                         ? NumberSelectionShortcut.label(for: index, modifiers: numberSelectionModifiers)
+                                         : nil)
                         }
                     }
                     .padding(.horizontal, 20)

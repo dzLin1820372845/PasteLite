@@ -10,6 +10,7 @@ struct CardView: View {
     let onSelect: (ClipboardItem) -> Void
     /// 卡片高度 = 抽屉卡片区实测可用高度（DrawerView 按当前屏高传入），近方形观感随屏自适应
     let height: CGFloat
+    let shortcutLabel: String?
 
     @State private var hovering = false
 
@@ -51,10 +52,20 @@ struct CardView: View {
     /// 头带（卡片顶部约 22%）：类型名 + 相对时间 + 来源图标，按内容类型着色
     private var headband: some View {
         HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(kindName)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    if let shortcutLabel {
+                        Text(shortcutLabel)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 3)
+                            .background(Color.white.opacity(0.18), in: Capsule())
+                    }
+                    Text(kindName)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
                 Text(relativeTimeText)
                     .font(.system(size: 11))
                     .foregroundStyle(.white.opacity(0.7))
