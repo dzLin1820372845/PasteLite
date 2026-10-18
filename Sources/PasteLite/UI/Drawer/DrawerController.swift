@@ -8,14 +8,83 @@ private final class DrawerPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 }
 
+/// 抽屉内数字选卡快捷键的键码、修饰键和展示文案。
+/// 修饰键只在抽屉已经打开时由本地事件监听处理，不注册为系统级热键。
+enum NumberSelectionShortcut {
+    static let command: UInt32 = 0x0100
+    static let shift: UInt32 = 0x0200
+    static let option: UInt32 = 0x0800
+    static let control: UInt32 = 0x1000
+    static let defaultModifiers = command
+
+    static let modifierOptions: [UInt32] = [
+        command, option, control, shift,
+        command | option, command | control, command | shift,
+        option | control, option | shift, control | shift,
+        command | option | control, command | option | shift,
+        command | control | shift, option | control | shift,
+        command | option | control | shift
+    ]
+
+    private static let numberKeyCodes: [UInt16] = [18, 19, 20, 21, 23, 22, 26, 28, 25]
+
+    static func index(for event: NSEvent, modifiers: UInt32) -> Int? {
+        guard carbonModifiers(from: event.modifierFlags) == modifiers,
+              let index = numberKeyCodes.firstIndex(of: event.keyCode) else { return nil }
+        return index
+    }
+
+    static func label(for index: Int, modifiers: UInt32) -> String {
+        "\(modifierSymbols(for: modifiers))\(index + 1)"
+    }
+
+    static func modifierLabel(for modifiers: UInt32) -> String {
+        let names = [
+            (command, "Command"),
+            (option, "Option"),
+            (control, "Control"),
+            (shift, "Shift")
+        ].compactMap { mask, name in modifiers & mask != 0 ? name : nil }
+        return "\(modifierSymbols(for: modifiers))  \(names.joined(separator: " + "))"
+    }
+
+    static func carbonModifiers(from flags: NSEvent.ModifierFlags) -> UInt32 {
+        var modifiers: UInt32 = 0
+        if flags.contains(.command) { modifiers |= command }
+        if flags.contains(.shift) { modifiers |= shift }
+        if flags.contains(.option) { modifiers |= option }
+        if flags.contains(.control) { modifiers |= control }
+        return modifiers
+    }
+
+    private static func modifierSymbols(for modifiers: UInt32) -> String {
+        var symbols = ""
+        if modifiers & control != 0 { symbols += "⌃" }
+        if modifiers & option != 0 { symbols += "⌥" }
+        if modifiers & shift != 0 { symbols += "⇧" }
+        if modifiers & command != 0 { symbols += "⌘" }
+        return symbols
+    }
+}
+
 @MainActor
 final class DrawerController: ObservableObject {
     var isVisible: Bool { panel.isVisible }
+    var numberSelectionModifiers: UInt32 {
+        didSet {
+            guard NumberSelectionShortcut.modifierOptions.contains(numberSelectionModifiers) else {
+                numberSelectionModifiers = oldValue
+                return
+            }
+            hostingView.rootView = makeDrawerView(generation: showGeneration)
+        }
+    }
 
     private let store: ClipboardStore
     private let onPaste: (ClipboardItem, Bool) -> PasteOutcome
     private let panel: DrawerPanel
     private let hostingView: NSHostingView<DrawerView>
+    private var displayedItems: [ClipboardItem] = []
     private var showGeneration = 0
     private var keyMonitor: Any?
     private var outsideClickMonitor: Any?
@@ -24,6 +93,7 @@ final class DrawerController: ObservableObject {
          onPaste: @escaping (ClipboardItem, Bool) -> PasteOutcome) {
         self.store = store
         self.onPaste = onPaste
+        self.numberSelectionModifiers = NumberSelectionShortcut.defaultModifiers
 
         let panel = DrawerPanel(contentRect: .zero,
                                 styleMask: [.borderless, .nonactivatingPanel],
@@ -42,11 +112,13 @@ final class DrawerController: ObservableObject {
 
         // 逃逸闭包不能捕获未完成两段式初始化的 self：先以空回调占位，
         // self 完整初始化后立即换入真实回调（初始面板未显示，show() 唤出时也会重建 rootView）
-        self.hostingView = NSHostingView(rootView: DrawerView(store: store, generation: 0, onSelect: { _ in }))
+        self.hostingView = NSHostingView(rootView: DrawerView(store: store,
+                                                              generation: 0,
+                                                              numberSelectionModifiers: NumberSelectionShortcut.defaultModifiers,
+                                                              onSelect: { _ in },
+                                                              onItemsChanged: { _ in }))
         panel.contentView = hostingView
-        hostingView.rootView = DrawerView(store: store, generation: 0, onSelect: { [weak self] item in
-            self?.select(item)
-        })
+        hostingView.rootView = makeDrawerView(generation: 0)
     }
 
     func toggle() {
@@ -89,9 +161,8 @@ final class DrawerController: ObservableObject {
 
         // 每次唤出以递增 generation 重建内容：清空上次搜索词，并让搜索框重新聚焦
         showGeneration += 1
-        hostingView.rootView = DrawerView(store: store, generation: showGeneration, onSelect: { [weak self] item in
-            self?.select(item)
-        })
+        displayedItems = []
+        hostingView.rootView = makeDrawerView(generation: showGeneration)
 
         panel.setFrame(initialFrame, display: false)
         panel.orderFrontRegardless()   // 显示但不激活应用
@@ -110,19 +181,26 @@ final class DrawerController: ObservableObject {
     /// 延迟到完成回调，期间面板仍是 key window（搜索框持有键盘焦点），合成 Cmd+V 会被
     /// 抽屉自身消费（回填内容贴进搜索框）而非目标应用——因此这里同步 orderOut。
     /// Option 按下时按纯文本/路径语义粘贴
-    private func select(_ item: ClipboardItem) {
-        let asPlainText = NSEvent.modifierFlags.contains(.option)
+    private func select(_ item: ClipboardItem, asPlainText: Bool? = nil) {
+        let shouldPastePlainText = asPlainText ?? NSEvent.modifierFlags.contains(.option)
         removeMonitors()
         panel.orderOut(nil)
-        _ = onPaste(item, asPlainText)
+        _ = onPaste(item, shouldPastePlainText)
     }
 
     private func installMonitors() {
         guard keyMonitor == nil else { return }
-        // Esc 关闭：只拦截发往本面板的按键，其他窗口不受影响
+        // Esc 关闭、数字快捷键选卡：只拦截发往本面板的按键，其他窗口不受影响。
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, event.keyCode == 53 /* kVK_Escape */, event.window === self.panel else { return event }
-            self.hide()
+            guard let self, event.window === self.panel else { return event }
+            if event.keyCode == 53 /* kVK_Escape */ {
+                self.hide()
+                return nil
+            }
+            guard let index = NumberSelectionShortcut.index(for: event,
+                                                            modifiers: self.numberSelectionModifiers),
+                  index < self.displayedItems.count else { return event }
+            self.select(self.displayedItems[index], asPlainText: false)
             return nil
         }
         // 点击面板外关闭：应用未激活时点击其他应用窗口只有全局 monitor 能看到；
@@ -142,5 +220,17 @@ final class DrawerController: ObservableObject {
             NSEvent.removeMonitor(outsideClickMonitor)
             self.outsideClickMonitor = nil
         }
+    }
+
+    private func makeDrawerView(generation: Int) -> DrawerView {
+        DrawerView(store: store,
+                   generation: generation,
+                   numberSelectionModifiers: numberSelectionModifiers,
+                   onSelect: { [weak self] item in
+                       self?.select(item)
+                   },
+                   onItemsChanged: { [weak self] items in
+                       self?.displayedItems = items
+                   })
     }
 }

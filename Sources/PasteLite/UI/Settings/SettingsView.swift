@@ -322,12 +322,46 @@ private struct HotKeySettingsPage: View {
                 SettingsCard {
                     HotKeyRecorderView(settings: settings)
                 }
+                SettingsCard {
+                    NumberSelectionSettingsView(settings: settings)
+                }
                 Text("组合键必须包含 ⌘、⌃、⌥ 或 ⇧ 中至少一个修饰键。按 Esc 可以取消录制。")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 2)
             }
             .padding(24)
+        }
+    }
+}
+
+private struct NumberSelectionSettingsView: View {
+    @ObservedObject var settings: SettingsStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("数字选卡")
+                        .font(.headline)
+                    Text("抽屉打开时，用修饰键加 1–9 直接粘贴前九张卡片")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("修饰键", selection: $settings.numberSelectionModifiers) {
+                    ForEach(NumberSelectionShortcut.modifierOptions, id: \.self) { modifiers in
+                        Text(NumberSelectionShortcut.modifierLabel(for: modifiers))
+                            .tag(modifiers)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 180, alignment: .trailing)
+            }
+            Text("当前：\(NumberSelectionShortcut.modifierLabel(for: settings.numberSelectionModifiers)) + 数字键。编号按搜索和排序结果固定，不随横向滚动改变。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }
