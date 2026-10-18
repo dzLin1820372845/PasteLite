@@ -71,7 +71,7 @@ cd PasteLite
 构建完成后：
 
 - 应用：`build/PasteLite.app`
-- Universal DMG：`dist/PasteLite-0.1.0-macOS-universal.dmg`
+- Universal DMG：`dist/PasteLite-0.1.1-macOS-universal.dmg`
 
 脚本会分别构建 `arm64` 和 `x86_64`，用 `lipo` 合并为 Universal 二进制，再组装并 ad-hoc 签名应用，最后生成可拖拽安装的 DMG。
 
@@ -82,7 +82,7 @@ cd PasteLite
 
 ## 版本
 
-当前 Release 为 **0.1.0**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
+当前 Release 为 **0.1.1**，版本号遵循语义化版本格式（`MAJOR.MINOR.PATCH`）。后续版本会同步更新 `Info.plist`、Release 标签和安装包文件名。
 
 ## 许可证
 
