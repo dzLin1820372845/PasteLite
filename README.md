@@ -34,8 +34,14 @@ PasteLite 是一个原生 macOS 菜单栏剪贴板历史管理器，记录你复
 
 1. 从 [Releases](https://github.com/dzLin1820372845/PasteLite/releases) 下载最新的 `PasteLite-*-macOS-universal.dmg`。
 2. 打开 DMG，将 `PasteLite.app` 拖到 `Applications` 文件夹。
-3. 第一次启动如果 macOS 显示开发者无法验证，请在 Finder 中右键应用并选择“打开”。这是未公证的 ad-hoc 签名应用的系统提示。
-4. 根据提示在“系统设置 → 隐私与安全性”中授予：
+
+> **首次启动提示**：PasteLite 当前使用未公证的 ad-hoc 签名。第一次启动如果 macOS 显示“Apple 无法验证 PasteLite 是否包含可能危害 Mac 安全或泄漏隐私的恶意软件”，请按下面步骤操作：
+>
+> 1. 在 Finder 中打开 DMG，把 `PasteLite.app` 拖到“应用程序”。
+> 2. 右键 `PasteLite.app`，选择“打开”。
+> 3. 如果仍被阻止，进入“系统设置 → 隐私与安全性”，点击“仍要打开”。
+
+3. 根据提示在“系统设置 → 隐私与安全性”中授予：
    - **辅助功能**：用于把选中的历史内容发送到当前前台应用。
    - **剪贴板访问**（macOS 15 及以上可能显示）：用于读取复制内容并保存历史。
 
