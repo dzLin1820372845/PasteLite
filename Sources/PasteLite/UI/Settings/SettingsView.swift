@@ -60,6 +60,8 @@ struct SettingsView: View {
             HistorySettingsPage(settings: settings, showClearConfirm: $showClearConfirm)
         case .privacy:
             PrivacySettingsPage(excludedBundleIDs: $settings.excludedBundleIDs)
+        case .about:
+            AboutSettingsPage()
         }
     }
 }
@@ -69,6 +71,7 @@ private enum SettingsPage: String, CaseIterable, Hashable {
     case hotKey
     case history
     case privacy
+    case about
 
     var title: String {
         switch self {
@@ -76,6 +79,7 @@ private enum SettingsPage: String, CaseIterable, Hashable {
         case .hotKey: return "快捷键"
         case .history: return "历史"
         case .privacy: return "隐私"
+        case .about: return "关于"
         }
     }
 
@@ -85,6 +89,7 @@ private enum SettingsPage: String, CaseIterable, Hashable {
         case .hotKey: return "唤起抽屉"
         case .history: return "容量与清理"
         case .privacy: return "排除应用"
+        case .about: return "版本与更新"
         }
     }
 
@@ -94,6 +99,7 @@ private enum SettingsPage: String, CaseIterable, Hashable {
         case .hotKey: return "command"
         case .history: return "clock"
         case .privacy: return "hand.raised"
+        case .about: return "info.circle"
         }
     }
 }
@@ -155,7 +161,7 @@ private struct PasteLiteLogoView: View {
     let size: CGFloat
 
     var body: some View {
-        if let image = PasteLiteBranding.templateImage(size: size) {
+        if let image = PasteLiteBranding.applicationImage(size: size) {
             Image(nsImage: image)
                 .resizable()
                 .interpolation(.high)
@@ -525,6 +531,129 @@ private struct HistorySettingsPage: View {
                 }
             }
             .padding(24)
+        }
+    }
+}
+
+private struct AboutSettingsPage: View {
+    @StateObject private var updateChecker = UpdateChecker()
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                SettingsPageHeader(title: "关于", subtitle: "PasteLite 的版本信息与更新", systemImage: "info.circle")
+
+                SettingsCard {
+                    HStack(spacing: 16) {
+                        if let image = PasteLiteBranding.applicationImage(size: 88) {
+                            Image(nsImage: image)
+                                .resizable()
+                                .interpolation(.high)
+                                .frame(width: 88, height: 88)
+                        }
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("PasteLite")
+                                .font(.title2.weight(.semibold))
+                            Text("菜单栏剪贴板历史管理器")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                            Text("版本 \(updateChecker.currentVersion)")
+                                .font(.callout.weight(.medium))
+                                .foregroundStyle(.tint)
+                        }
+                        Spacer()
+                    }
+                }
+
+                SettingsCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("软件更新")
+                                    .font(.headline)
+                                Text(updateDescription)
+                                    .font(.callout)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer()
+                            Button(updateButtonTitle) {
+                                handleUpdateAction()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .disabled(isChecking)
+                        }
+
+                        if case let .updateAvailable(version, downloadURL, releaseURL) = updateChecker.state {
+                            Divider()
+                            HStack(spacing: 8) {
+                                Button("下载 v\(version)") {
+                                    NSWorkspace.shared.open(downloadURL)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                Button("查看 Release") {
+                                    NSWorkspace.shared.open(releaseURL)
+                                }
+                                .buttonStyle(.link)
+                                .controlSize(.small)
+                            }
+                            Text("下载完成后退出 PasteLite，把新 App 拖入“应用程序”，选择“替换”，再重新打开。")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                SettingsCard {
+                    HStack {
+                        Label("开源许可", systemImage: "doc.text")
+                        Spacer()
+                        Text("MIT License")
+                            .foregroundStyle(.secondary)
+                        Button("查看 GitHub") {
+                            if let url = URL(string: "https://github.com/dzLin1820372845/PasteLite") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                        .buttonStyle(.link)
+                    }
+                }
+            }
+            .padding(24)
+        }
+    }
+
+    private var isChecking: Bool {
+        if case .checking = updateChecker.state { return true }
+        return false
+    }
+
+    private var updateButtonTitle: String {
+        isChecking ? "检查中…" : "检查更新"
+    }
+
+    private var updateDescription: String {
+        switch updateChecker.state {
+        case .idle:
+            return "仅在你点击按钮时连接 GitHub 检查，不会后台联网。"
+        case .checking:
+            return "正在查询 GitHub Releases…"
+        case .upToDate:
+            return "当前已经是最新版本。"
+        case let .updateAvailable(version, _, _):
+            return "发现新版本 v\(version)。"
+        case let .failed(message):
+            return "检查失败：\(message)"
+        }
+    }
+
+    private func handleUpdateAction() {
+        if case let .updateAvailable(_, downloadURL, _) = updateChecker.state {
+            NSWorkspace.shared.open(downloadURL)
+        } else {
+            updateChecker.check()
         }
     }
 }
